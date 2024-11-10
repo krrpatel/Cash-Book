@@ -1,59 +1,178 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
-
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
-
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
-  <base href="$FLUTTER_BASE_HREF">
-
-  <meta charset="UTF-8">
-  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
-
-  <!-- iOS meta tags & icons -->
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="cash_book">
-  <link rel="apple-touch-icon" href="icons/Icon-192.png">
-
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
-
-  <title>cash_book</title>
-  <link rel="manifest" href="manifest.json">
-
-  <script>
-    // The value below is injected by flutter build, do not touch.
-    const serviceWorkerVersion = null;
-  </script>
-  <!-- This script adds the flutter initialization JS code -->
-  <script src="flutter.js" defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Cash Flow Tracker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            background-color: #f4f4f9;
+        }
+        .container {
+            max-width: 400px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        input, button {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .balance {
+            margin-top: 20px;
+            font-size: 24px;
+            text-align: center;
+        }
+        .balance.positive {
+            color: green;
+        }
+        .balance.negative {
+            color: red;
+        }
+        .transactions {
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+        }
+        .transaction {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px;
+        }
+        .transaction.credit {
+            color: green;
+        }
+        .transaction.debit {
+            color: red;
+        }
+    </style>
 </head>
 <body>
-  <script>
-    window.addEventListener('load', function(ev) {
-      // Download main.dart.js
-      _flutter.loader.loadEntrypoint({
-        serviceWorker: {
-          serviceWorkerVersion: serviceWorkerVersion,
-        },
-        onEntrypointLoaded: function(engineInitializer) {
-          engineInitializer.initializeEngine().then(function(appRunner) {
-            appRunner.runApp();
-          });
+    <div class="container">
+        <h1>Cash Flow Tracker</h1>
+        <label for="date">Date:</label>
+        <input type="date" id="date" required>
+
+        <label for="amount">Amount:</label>
+        <input type="number" id="amount" placeholder="Enter amount" required>
+
+        <label for="type">Transaction Type:</label>
+        <select id="type">
+            <option value="credit">Cash In (Credit)</option>
+            <option value="debit">Cash Out (Debit)</option>
+        </select>
+
+        <button onclick="addTransaction()">Add Transaction</button>
+
+        <div class="balance" id="balance">Current Balance: $0.00</div>
+
+        <div class="transactions" id="transactions">
+            <!-- Transactions will be listed here -->
+        </div>
+    </div>
+
+    <script>
+        let balance = 0;
+        const transactions = [];
+
+        // Load data from localStorage
+        function loadData() {
+            const savedTransactions = localStorage.getItem('transactions');
+            const savedBalance = localStorage.getItem('balance');
+            
+            if (savedTransactions) {
+                transactions.push(...JSON.parse(savedTransactions));
+            }
+            
+            if (savedBalance) {
+                balance = parseFloat(savedBalance);
+            }
+
+            updateUI();
         }
-      });
-    });
-  </script>
+
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem('transactions', JSON.stringify(transactions));
+            localStorage.setItem('balance', balance.toString());
+        }
+
+        // Add a new transaction
+        function addTransaction() {
+            const date = document.getElementById('date').value;
+            const amount = parseFloat(document.getElementById('amount').value);
+            const type = document.getElementById('type').value;
+
+            if (!date || isNaN(amount)) {
+                alert("Please enter a valid date and amount.");
+                return;
+            }
+
+            // Update balance and transactions
+            if (type === 'credit') {
+                balance += amount;
+                transactions.push({ date, amount, type });
+            } else if (type === 'debit') {
+                balance -= amount;
+                transactions.push({ date, amount: -amount, type });
+            }
+
+            saveData(); // Save after each transaction
+            updateUI(); // Update the user interface
+        }
+
+        // Update the UI
+        function updateUI() {
+            // Update balance display
+            const balanceElement = document.getElementById('balance');
+            balanceElement.textContent = `Current Balance: $${balance.toFixed(2)}`;
+            balanceElement.className = 'balance ' + (balance >= 0 ? 'positive' : 'negative');
+
+            // Update transactions display
+            const transactionsElement = document.getElementById('transactions');
+            transactionsElement.innerHTML = transactions.map(t => `
+                <div class="transaction ${t.type}">
+                    <span>${t.date}</span>
+                    <span>${t.type === 'credit' ? '+' : '-'}$${Math.abs(t.amount).toFixed(2)}</span>
+                </div>
+            `).join('');
+
+            // Clear input fields
+            document.getElementById('date').value = '';
+            document.getElementById('amount').value = '';
+        }
+
+        // Load data on page load
+        loadData();
+    </script>
 </body>
 </html>
