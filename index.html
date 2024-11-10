@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Daily Cash Flow Tracker</title>
     <style>
+        /* Styles here remain the same */
         body {
             font-family: Arial, sans-serif;
             display: flex;
@@ -75,6 +76,9 @@
             color: red;
         }
     </style>
+    <!-- Add Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
 </head>
 <body>
     <div class="container">
@@ -101,33 +105,38 @@
     </div>
 
     <script>
+        // Initialize Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyA2QQSNLpXO0A4DrEd8bVbxcI2pESRy_cU",
+            authDomain: "kcholidays-df338.firebaseapp.com",
+            projectId: "kcholidays-df338",
+            storageBucket: "kcholidays-df338.appspot.com",
+            messagingSenderId: "58994973409",
+            appId: "1:58994973409:android:bb1fa678705dbdda6435a0"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
         let balance = 0;
         const transactions = [];
 
-        // Load data from localStorage
-        function loadData() {
-            const savedTransactions = localStorage.getItem('transactions');
-            const savedBalance = localStorage.getItem('balance');
-            
-            if (savedTransactions) {
-                transactions.push(...JSON.parse(savedTransactions));
-            }
-            
-            if (savedBalance) {
-                balance = parseFloat(savedBalance);
-            }
+        // Load data from Firestore
+        async function loadData() {
+            const snapshot = await db.collection("transactions").get();
+            transactions.length = 0; // Clear current transactions
+            balance = 0;
+
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+                transactions.push(data);
+                balance += data.type === 'credit' ? data.amount : -data.amount;
+            });
 
             updateUI();
         }
 
-        // Save data to localStorage
-        function saveData() {
-            localStorage.setItem('transactions', JSON.stringify(transactions));
-            localStorage.setItem('balance', balance.toString());
-        }
-
-        // Add a new transaction
-        function addTransaction() {
+        // Add a new transaction to Firestore
+        async function addTransaction() {
             const date = document.getElementById('date').value;
             const amount = parseFloat(document.getElementById('amount').value);
             const type = document.getElementById('type').value;
@@ -137,17 +146,16 @@
                 return;
             }
 
-            // Update balance and transactions
-            if (type === 'credit') {
-                balance += amount;
-                transactions.push({ date, amount, type });
-            } else if (type === 'debit') {
-                balance -= amount;
-                transactions.push({ date, amount: -amount, type });
-            }
+            const transaction = { date, amount: type === 'credit' ? amount : -amount, type };
 
-            saveData(); // Save after each transaction
-            updateUI(); // Update the user interface
+            // Update balance and transactions
+            balance += type === 'credit' ? amount : -amount;
+            transactions.push(transaction);
+
+            // Save to Firestore
+            await db.collection("transactions").add(transaction);
+
+            updateUI();
         }
 
         // Update the UI
