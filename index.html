@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Daily Cash Flow Tracker</title>
     <style>
-        /* Styles here remain the same */
         body {
             font-family: Arial, sans-serif;
             display: flex;
@@ -76,7 +75,6 @@
             color: red;
         }
     </style>
-    <!-- Add Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
 </head>
@@ -105,7 +103,7 @@
     </div>
 
     <script>
-        // Initialize Firebase
+        // Firebase config
         const firebaseConfig = {
             apiKey: "AIzaSyA2QQSNLpXO0A4DrEd8bVbxcI2pESRy_cU",
             authDomain: "kcholidays-df338.firebaseapp.com",
@@ -114,14 +112,24 @@
             messagingSenderId: "58994973409",
             appId: "1:58994973409:android:bb1fa678705dbdda6435a0"
         };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
 
+        // Declare Firebase variables
+        let db;
         let balance = 0;
         const transactions = [];
 
+        // Initialize Firebase
+        window.onload = function() {
+            const app = firebase.initializeApp(firebaseConfig);
+            db = firebase.firestore(app);
+
+            // Load data from Firestore on page load
+            loadData();
+        };
+
         // Load data from Firestore
         async function loadData() {
+            console.log("Loading data from Firestore...");
             const snapshot = await db.collection("transactions").get();
             transactions.length = 0; // Clear current transactions
             balance = 0;
@@ -132,6 +140,7 @@
                 balance += data.type === 'credit' ? data.amount : -data.amount;
             });
 
+            console.log("Transactions loaded:", transactions);
             updateUI();
         }
 
@@ -152,10 +161,15 @@
             balance += type === 'credit' ? amount : -amount;
             transactions.push(transaction);
 
-            // Save to Firestore
-            await db.collection("transactions").add(transaction);
-
-            updateUI();
+            try {
+                console.log("Adding transaction to Firestore:", transaction);
+                await db.collection("transactions").add(transaction);
+                console.log("Transaction added successfully.");
+                updateUI();
+            } catch (error) {
+                console.error("Error adding transaction:", error);
+                alert("Failed to add transaction.");
+            }
         }
 
         // Update the UI
@@ -178,9 +192,6 @@
             document.getElementById('date').value = '';
             document.getElementById('amount').value = '';
         }
-
-        // Load data on page load
-        loadData();
     </script>
 </body>
 </html>
