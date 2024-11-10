@@ -3,106 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cash Flow Tracker</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-            background-color: #f4f4f9;
-        }
-        .container {
-            max-width: 400px;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-        h1 {
-            text-align: center;
-            color: #333;
-        }
-        label {
-            display: block;
-            margin-top: 10px;
-            font-weight: bold;
-        }
-        input, button {
-            width: 100%;
-            padding: 8px;
-            margin-top: 5px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-        button {
-            background-color: #28a745;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #218838;
-        }
-        .balance {
-            margin-top: 20px;
-            font-size: 24px;
-            text-align: center;
-        }
-        .balance.positive {
-            color: green;
-        }
-        .balance.negative {
-            color: red;
-        }
-        .transactions {
-            margin-top: 20px;
-            max-height: 200px;
-            overflow-y: auto;
-            border-top: 1px solid #ddd;
-            padding-top: 10px;
-        }
-        .transaction {
-            display: flex;
-            justify-content: space-between;
-            padding: 5px;
-        }
-        .transaction.credit {
-            color: green;
-        }
-        .transaction.debit {
-            color: red;
-        }
-    </style>
-    <!-- Firebase SDKs -->
+    <title>Firebase Test</title>
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
 </head>
 <body>
-    <div class="container">
-        <h1>Cash Flow Tracker</h1>
-        <label for="date">Date:</label>
-        <input type="date" id="date" required>
-
-        <label for="amount">Amount:</label>
-        <input type="number" id="amount" placeholder="Enter amount" required>
-
-        <label for="type">Transaction Type:</label>
-        <select id="type">
-            <option value="credit">Cash In (Credit)</option>
-            <option value="debit">Cash Out (Debit)</option>
-        </select>
-
-        <button onclick="addTransaction()">Add Transaction</button>
-
-        <div class="balance" id="balance">Current Balance: ₹0.00</div>
-
-        <div class="transactions" id="transactions">
-            <!-- Transactions will be listed here -->
-        </div>
-    </div>
-
     <script>
         // Firebase config
         const firebaseConfig = {
@@ -119,86 +25,31 @@
         const app = firebase.initializeApp(firebaseConfig);
         const db = firebase.database(app);
 
-        let balance = 0;
-        const transactions = [];
+        // Add a transaction
+        function addTransaction() {
+            const date = "2024-11-10"; // Example date
+            const amount = 100;        // Example amount
+            const type = "credit";     // Type: credit or debit
 
-        // Load data from Firebase Realtime Database
-        async function loadData() {
-            console.log("Loading data from Realtime Database...");
-            try {
-                const transactionsRef = db.ref('transactions');
-                transactionsRef.once('value', (snapshot) => {
-                    const data = snapshot.val();
-                    transactions.length = 0;
-                    balance = 0;
+            const transaction = {
+                date: date,
+                amount: type === "credit" ? amount : -amount, // Use negative for debit
+                type: type
+            };
 
-                    if (data) {
-                        Object.values(data).forEach((transaction) => {
-                            transactions.push(transaction);
-                            balance += transaction.type === 'credit' ? transaction.amount : -transaction.amount;
-                        });
-                    }
-
-                    console.log("Transactions loaded:", transactions);
-                    updateUI();
+            // Add transaction to the database
+            const transactionsRef = db.ref('transactions');
+            transactionsRef.push(transaction)
+                .then(() => {
+                    console.log('Transaction added successfully');
+                })
+                .catch((error) => {
+                    console.error('Error adding transaction:', error);
                 });
-            } catch (error) {
-                console.error("Error loading data:", error);
-            }
         }
 
-        // Add a new transaction to Firebase Realtime Database
-        async function addTransaction() {
-            const date = document.getElementById('date').value;
-            const amount = parseFloat(document.getElementById('amount').value);
-            const type = document.getElementById('type').value;
-
-            if (!date || isNaN(amount)) {
-                alert("Please enter a valid date and amount.");
-                return;
-            }
-
-            const transaction = { date, amount: type === 'credit' ? amount : -amount, type };
-
-            // Update balance and transactions
-            balance += type === 'credit' ? amount : -amount;
-            transactions.push(transaction);
-
-            try {
-                console.log("Adding transaction to Realtime Database:", transaction);
-                const newTransactionRef = db.ref('transactions').push();
-                await newTransactionRef.set(transaction);
-                console.log("Transaction added successfully.");
-                updateUI();
-            } catch (error) {
-                console.error("Error adding transaction:", error);
-                alert("Failed to add transaction.");
-            }
-        }
-
-        // Update the UI
-        function updateUI() {
-            // Update balance display
-            const balanceElement = document.getElementById('balance');
-            balanceElement.textContent = `Current Balance: ₹${balance.toFixed(2)}`;
-            balanceElement.className = 'balance ' + (balance >= 0 ? 'positive' : 'negative');
-
-            // Update transactions display
-            const transactionsElement = document.getElementById('transactions');
-            transactionsElement.innerHTML = transactions.map(t => `
-                <div class="transaction ${t.type}">
-                    <span>${t.date}</span>
-                    <span>${t.type === 'credit' ? '+' : '-'}₹${Math.abs(t.amount).toFixed(2)}</span>
-                </div>
-            `).join('');
-
-            // Clear input fields
-            document.getElementById('date').value = '';
-            document.getElementById('amount').value = '';
-        }
-
-        // Load initial data when the page loads
-        window.onload = loadData;
+        // Call the addTransaction function to add the transaction
+        addTransaction();
     </script>
 </body>
 </html>
