@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Cash Flow Tracker</title>
+    <title>Cash Flow Tracker</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -77,6 +77,7 @@
     </style>
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
 </head>
 <body>
@@ -108,53 +109,46 @@
         const firebaseConfig = {
             apiKey: "AIzaSyA2QQSNLpXO0A4DrEd8bVbxcI2pESRy_cU",
             authDomain: "kcholidays-df338.firebaseapp.com",
+            databaseURL: "https://kcholidays-df338-default-rtdb.firebaseio.com",
             projectId: "kcholidays-df338",
             storageBucket: "kcholidays-df338.appspot.com",
             messagingSenderId: "58994973409",
             appId: "1:58994973409:android:bb1fa678705dbdda6435a0"
         };
 
-        let db;
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.database(app);
+
         let balance = 0;
         const transactions = [];
 
-        // Initialize Firebase when the page loads
-        window.onload = function() {
-            try {
-                // Initialize Firebase app
-                const app = firebase.initializeApp(firebaseConfig);
-                db = firebase.firestore(app);
-                console.log("Firebase initialized successfully");
-
-                // Load data from Firestore on page load
-                loadData();
-            } catch (error) {
-                console.error("Error initializing Firebase:", error);
-            }
-        };
-
-        // Load data from Firestore
+        // Load data from Firebase Realtime Database
         async function loadData() {
-            console.log("Loading data from Firestore...");
+            console.log("Loading data from Realtime Database...");
             try {
-                const snapshot = await db.collection("transactions").get();
-                transactions.length = 0; // Clear current transactions
-                balance = 0;
+                const transactionsRef = db.ref('transactions');
+                transactionsRef.once('value', (snapshot) => {
+                    const data = snapshot.val();
+                    transactions.length = 0;
+                    balance = 0;
 
-                snapshot.forEach((doc) => {
-                    const data = doc.data();
-                    transactions.push(data);
-                    balance += data.type === 'credit' ? data.amount : -data.amount;
+                    if (data) {
+                        Object.values(data).forEach((transaction) => {
+                            transactions.push(transaction);
+                            balance += transaction.type === 'credit' ? transaction.amount : -transaction.amount;
+                        });
+                    }
+
+                    console.log("Transactions loaded:", transactions);
+                    updateUI();
                 });
-
-                console.log("Transactions loaded:", transactions);
-                updateUI();
             } catch (error) {
                 console.error("Error loading data:", error);
             }
         }
 
-        // Add a new transaction to Firestore
+        // Add a new transaction to Firebase Realtime Database
         async function addTransaction() {
             const date = document.getElementById('date').value;
             const amount = parseFloat(document.getElementById('amount').value);
@@ -172,8 +166,9 @@
             transactions.push(transaction);
 
             try {
-                console.log("Adding transaction to Firestore:", transaction);
-                await db.collection("transactions").add(transaction);
+                console.log("Adding transaction to Realtime Database:", transaction);
+                const newTransactionRef = db.ref('transactions').push();
+                await newTransactionRef.set(transaction);
                 console.log("Transaction added successfully.");
                 updateUI();
             } catch (error) {
@@ -202,6 +197,9 @@
             document.getElementById('date').value = '';
             document.getElementById('amount').value = '';
         }
+
+        // Load initial data when the page loads
+        window.onload = loadData;
     </script>
 </body>
 </html>
