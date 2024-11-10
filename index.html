@@ -4,13 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Firebase Test</title>
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
 </head>
 <body>
     <script>
-        // Firebase config
         const firebaseConfig = {
             apiKey: "AIzaSyA2QQSNLpXO0A4DrEd8bVbxcI2pESRy_cU",
             authDomain: "kcholidays-df338.firebaseapp.com",
@@ -21,23 +19,20 @@
             appId: "1:58994973409:android:bb1fa678705dbdda6435a0"
         };
 
-        // Initialize Firebase
         const app = firebase.initializeApp(firebaseConfig);
         const db = firebase.database(app);
 
-        // Add a transaction
         function addTransaction() {
-            const date = "2024-11-10"; // Example date
-            const amount = 100;        // Example amount
-            const type = "credit";     // Type: credit or debit
+            const date = "2024-11-10";
+            const amount = 100;
+            const type = "credit";
 
             const transaction = {
                 date: date,
-                amount: type === "credit" ? amount : -amount, // Use negative for debit
+                amount: type === "credit" ? amount : -amount,
                 type: type
             };
 
-            // Add transaction to the database
             const transactionsRef = db.ref('transactions');
             transactionsRef.push(transaction)
                 .then(() => {
@@ -48,7 +43,6 @@
                 });
         }
 
-        // Call the addTransaction function to add the transaction
         addTransaction();
     </script>
 </body>
