@@ -75,6 +75,7 @@
             color: red;
         }
     </style>
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
 </head>
@@ -113,35 +114,45 @@
             appId: "1:58994973409:android:bb1fa678705dbdda6435a0"
         };
 
-        // Declare Firebase variables
         let db;
         let balance = 0;
         const transactions = [];
 
-        // Initialize Firebase
+        // Initialize Firebase when the page loads
         window.onload = function() {
-            const app = firebase.initializeApp(firebaseConfig);
-            db = firebase.firestore(app);
+            try {
+                // Initialize Firebase app
+                const app = firebase.initializeApp(firebaseConfig);
+                db = firebase.firestore(app);
+                
+                console.log("Firebase initialized successfully");
 
-            // Load data from Firestore on page load
-            loadData();
+                // Load data from Firestore on page load
+                loadData();
+            } catch (error) {
+                console.error("Error initializing Firebase:", error);
+            }
         };
 
         // Load data from Firestore
         async function loadData() {
             console.log("Loading data from Firestore...");
-            const snapshot = await db.collection("transactions").get();
-            transactions.length = 0; // Clear current transactions
-            balance = 0;
+            try {
+                const snapshot = await db.collection("transactions").get();
+                transactions.length = 0; // Clear current transactions
+                balance = 0;
 
-            snapshot.forEach((doc) => {
-                const data = doc.data();
-                transactions.push(data);
-                balance += data.type === 'credit' ? data.amount : -data.amount;
-            });
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    transactions.push(data);
+                    balance += data.type === 'credit' ? data.amount : -data.amount;
+                });
 
-            console.log("Transactions loaded:", transactions);
-            updateUI();
+                console.log("Transactions loaded:", transactions);
+                updateUI();
+            } catch (error) {
+                console.error("Error loading data:", error);
+            }
         }
 
         // Add a new transaction to Firestore
