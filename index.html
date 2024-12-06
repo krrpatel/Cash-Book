@@ -1,119 +1,96 @@
 <!DOCTYPE html>
 <html lang="en">
+ 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Firebase PUT and DELETE</title>
-  <script src="https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.17.2/firebase-database.js"></script>
+    <meta charset="UTF-8">
+    <title>Collecting Data</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+ 
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css"
+        integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2"
+        crossorigin="anonymous">
 </head>
-<body>
-  <h1>Firebase Database Operations</h1>
-
-  <h2>Initialize Firebase</h2>
-  <form id="firebaseConfig">
-    <label for="apiKey">API Key:</label><br>
-    <input type="text" id="apiKey" value="AIzaSyDgpXYSDzF-V-cNVdIh_KqQDcyWsco1P48" required><br><br>
-
-    <label for="authDomain">Auth Domain:</label><br>
-    <input type="text" id="authDomain" value="cash-tracker-a2731.firebaseapp.com" required><br><br>
-
-    <label for="databaseURL">Database URL:</label><br>
-    <input type="text" id="databaseURL" value="https://cash-tracker-a2731-default-rtdb.firebaseio.com" required><br><br>
-
-    <label for="projectId">Project ID:</label><br>
-    <input type="text" id="projectId" value="cash-tracker-a2731" required><br><br>
-
-    <button type="button" onclick="initializeFirebase()">Initialize Firebase</button>
-  </form>
-
-  <hr>
-
-  <h2>PUT Value</h2>
-  <form id="putForm">
-    <label for="branchPath">Random Branch Path:</label><br>
-    <input type="text" id="branchPath" placeholder="e.g., random/path/123" required><br><br>
-
-    <label for="branchValue">Value:</label><br>
-    <input type="text" id="branchValue" placeholder="Enter value" required><br><br>
-
-    <button type="button" onclick="putValue()">PUT Value</button>
-  </form>
-
-  <hr>
-
-  <h2>DELETE Value</h2>
-  <form id="deleteForm">
-    <label for="deletePath">Branch Path to Delete:</label><br>
-    <input type="text" id="deletePath" placeholder="e.g., random/path/123" required><br><br>
-
-    <button type="button" onclick="deleteValue()">DELETE Value</button>
-  </form>
-
-  <hr>
-
-  <h2>Status</h2>
-  <p id="statusMessage">Not connected</p>
-
-  <script>
-    let database;
-
-    // Initialize Firebase dynamically
-    function initializeFirebase() {
-      const apiKey = document.getElementById("apiKey").value;
-      const authDomain = document.getElementById("authDomain").value;
-      const databaseURL = document.getElementById("databaseURL").value;
-      const projectId = document.getElementById("projectId").value;
-
-      const firebaseConfig = {
-        apiKey,
-        authDomain,
-        databaseURL,
-        projectId,
-      };
-
-      const app = firebase.initializeApp(firebaseConfig);
-      database = firebase.database(app);
-
-      document.getElementById("statusMessage").innerText = "Firebase Initialized Successfully!";
-    }
-
-    // PUT Value into Firebase
-    function putValue() {
-      if (!database) {
-        alert("Firebase is not initialized. Please initialize Firebase first.");
-        return;
-      }
-
-      const branchPath = document.getElementById("branchPath").value;
-      const branchValue = document.getElementById("branchValue").value;
-
-      database.ref(branchPath).set(branchValue)
-        .then(() => {
-          document.getElementById("statusMessage").innerText = `Value added at '${branchPath}' successfully!`;
-        })
-        .catch((error) => {
-          document.getElementById("statusMessage").innerText = `Error: ${error.message}`;
-        });
-    }
-
-    // DELETE Value from Firebase
-    function deleteValue() {
-      if (!database) {
-        alert("Firebase is not initialized. Please initialize Firebase first.");
-        return;
-      }
-
-      const deletePath = document.getElementById("deletePath").value;
-
-      database.ref(deletePath).remove()
-        .then(() => {
-          document.getElementById("statusMessage").innerText = `Branch '${deletePath}' deleted successfully!`;
-        })
-        .catch((error) => {
-          document.getElementById("statusMessage").innerText = `Error: ${error.message}`;
-        });
-    }
-  </script>
+ 
+<body class="container" style="margin-top: 50px; width: 50%; height:auto;">
+     
+    <h2 class="text-primary" style="margin-left: 15px; margin-bottom: 10px">
+        Hey There, Help Us In Collecting Data
+    </h2>
+     
+    <form class="container" id="contactForm">
+        <div class="card">
+            <div class="card-body">
+                <div class="form-group">
+                    <label for="exampleFormControlInput1">
+                        Enter Your Name
+                    </label>
+                     
+                    <input type="text" class="form-control"
+                    id="name" placeholder="Enter your name">
+                </div>
+ 
+                <div class="form-group">
+                    <label for="exampleFormControlInput1">
+                        Email address
+                    </label>
+                     
+                    <input type="email" class="form-control"
+                    id="email" placeholder="name@example.com">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary"
+                style="margin-left: 15px; margin-top: 10px">
+                Submit
+            </button>
+        </div>
+    </form>
+ 
+    <script src="https://www.gstatic.com/firebasejs/3.7.4/firebase.js"></script>
+     
+    <script>
+        let firebaseConfig = {
+            apiKey: "AIzaSyDgpXYSDzF-V-cNVdIh_KqQDcyWsco1P48",
+            authDomain: "cash-tracker-a2731.firebaseapp.com",
+            databaseURL: "https://cash-tracker-a2731-default-rtdb.firebaseio.com",
+            projectId: "cash-tracker-a2731",
+            storageBucket: "cash-tracker-a2731.appspot.com",
+            messagingSenderId: "733705266780",
+            appId: "1:733705266780:web:0fd1e94cb7698e7380a899"
+        };
+ 
+        firebase.initializeApp(firebaseConfig);
+ 
+        let messagesRef = firebase.database()
+            .ref('CollectedData');
+         
+        document.getElementById('contactForm')
+            .addEventListener('submit', submitForm);
+ 
+        function submitForm(e) {
+            e.preventDefault();
+ 
+            // Get values
+            let name = getInputVal('name');
+            let email = getInputVal('email');
+ 
+            saveMessage(name, email);
+            document.getElementById('contactForm').reset();
+        }
+ 
+        // Function to get form values
+        function getInputVal(id) {
+            return document.getElementById(id).value;
+        }
+ 
+        // Save message to firebase
+        function saveMessage(name, email) {
+            let newMessageRef = messagesRef.push();
+            newMessageRef.set({
+                name: name,
+                email: email,
+            });
+        }
+    </script>
 </body>
+ 
 </html>
