@@ -1,49 +1,119 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Firebase Test</title>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Firebase PUT and DELETE</title>
+  <script src="https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.17.2/firebase-database.js"></script>
 </head>
 <body>
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyA2QQSNLpXO0A4DrEd8bVbxcI2pESRy_cU",
-            authDomain: "kcholidays-df338.firebaseapp.com",
-            databaseURL: "https://kcholidays-df338-default-rtdb.firebaseio.com",
-            projectId: "kcholidays-df338",
-            storageBucket: "kcholidays-df338.appspot.com",
-            messagingSenderId: "58994973409",
-            appId: "1:58994973409:android:bb1fa678705dbdda6435a0"
-        };
+  <h1>Firebase Database Operations</h1>
 
-        const app = firebase.initializeApp(firebaseConfig);
-        const db = firebase.database(app);
+  <h2>Initialize Firebase</h2>
+  <form id="firebaseConfig">
+    <label for="apiKey">API Key:</label><br>
+    <input type="text" id="apiKey" value="AIzaSyDgpXYSDzF-V-cNVdIh_KqQDcyWsco1P48" required><br><br>
 
-        function addTransaction() {
-            const date = "2024-11-10";
-            const amount = 100;
-            const type = "credit";
+    <label for="authDomain">Auth Domain:</label><br>
+    <input type="text" id="authDomain" value="cash-tracker-a2731.firebaseapp.com" required><br><br>
 
-            const transaction = {
-                date: date,
-                amount: type === "credit" ? amount : -amount,
-                type: type
-            };
+    <label for="databaseURL">Database URL:</label><br>
+    <input type="text" id="databaseURL" value="https://cash-tracker-a2731-default-rtdb.firebaseio.com" required><br><br>
 
-            const transactionsRef = db.ref('transactions');
-            transactionsRef.push(transaction)
-                .then(() => {
-                    console.log('Transaction added successfully');
-                })
-                .catch((error) => {
-                    console.error('Error adding transaction:', error);
-                });
-        }
+    <label for="projectId">Project ID:</label><br>
+    <input type="text" id="projectId" value="cash-tracker-a2731" required><br><br>
 
-        addTransaction();
-    </script>
+    <button type="button" onclick="initializeFirebase()">Initialize Firebase</button>
+  </form>
+
+  <hr>
+
+  <h2>PUT Value</h2>
+  <form id="putForm">
+    <label for="branchPath">Random Branch Path:</label><br>
+    <input type="text" id="branchPath" placeholder="e.g., random/path/123" required><br><br>
+
+    <label for="branchValue">Value:</label><br>
+    <input type="text" id="branchValue" placeholder="Enter value" required><br><br>
+
+    <button type="button" onclick="putValue()">PUT Value</button>
+  </form>
+
+  <hr>
+
+  <h2>DELETE Value</h2>
+  <form id="deleteForm">
+    <label for="deletePath">Branch Path to Delete:</label><br>
+    <input type="text" id="deletePath" placeholder="e.g., random/path/123" required><br><br>
+
+    <button type="button" onclick="deleteValue()">DELETE Value</button>
+  </form>
+
+  <hr>
+
+  <h2>Status</h2>
+  <p id="statusMessage">Not connected</p>
+
+  <script>
+    let database;
+
+    // Initialize Firebase dynamically
+    function initializeFirebase() {
+      const apiKey = document.getElementById("apiKey").value;
+      const authDomain = document.getElementById("authDomain").value;
+      const databaseURL = document.getElementById("databaseURL").value;
+      const projectId = document.getElementById("projectId").value;
+
+      const firebaseConfig = {
+        apiKey,
+        authDomain,
+        databaseURL,
+        projectId,
+      };
+
+      const app = firebase.initializeApp(firebaseConfig);
+      database = firebase.database(app);
+
+      document.getElementById("statusMessage").innerText = "Firebase Initialized Successfully!";
+    }
+
+    // PUT Value into Firebase
+    function putValue() {
+      if (!database) {
+        alert("Firebase is not initialized. Please initialize Firebase first.");
+        return;
+      }
+
+      const branchPath = document.getElementById("branchPath").value;
+      const branchValue = document.getElementById("branchValue").value;
+
+      database.ref(branchPath).set(branchValue)
+        .then(() => {
+          document.getElementById("statusMessage").innerText = `Value added at '${branchPath}' successfully!`;
+        })
+        .catch((error) => {
+          document.getElementById("statusMessage").innerText = `Error: ${error.message}`;
+        });
+    }
+
+    // DELETE Value from Firebase
+    function deleteValue() {
+      if (!database) {
+        alert("Firebase is not initialized. Please initialize Firebase first.");
+        return;
+      }
+
+      const deletePath = document.getElementById("deletePath").value;
+
+      database.ref(deletePath).remove()
+        .then(() => {
+          document.getElementById("statusMessage").innerText = `Branch '${deletePath}' deleted successfully!`;
+        })
+        .catch((error) => {
+          document.getElementById("statusMessage").innerText = `Error: ${error.message}`;
+        });
+    }
+  </script>
 </body>
 </html>
